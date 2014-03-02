@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		7E9A409718A19DC40016DA98 /* M13Checkbox.podspec in Resources */ = {isa = PBXBuildFile; fileRef = 7E9A409618A19DC40016DA98 /* M13Checkbox.podspec */; };
+		7E9A409918A19DD00016DA98 /* readme.md in Resources */ = {isa = PBXBuildFile; fileRef = 7E9A409818A19DD00016DA98 /* readme.md */; };
 		CA6976891898A400008B576C /* M13Checkbox.m in Sources */ = {isa = PBXBuildFile; fileRef = CA6976881898A400008B576C /* M13Checkbox.m */; };
 		CAFF137A169139E8005B0C2B /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CAFF1379169139E8005B0C2B /* UIKit.framework */; };
 		CAFF137C169139E8005B0C2B /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CAFF137B169139E8005B0C2B /* Foundation.framework */; };
@@ -23,6 +25,8 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		7E9A409618A19DC40016DA98 /* M13Checkbox.podspec */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = M13Checkbox.podspec; sourceTree = "<group>"; };
+		7E9A409818A19DD00016DA98 /* readme.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = readme.md; sourceTree = "<group>"; };
 		CA6976871898A400008B576C /* M13Checkbox.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = M13Checkbox.h; path = Classes/M13Checkbox.h; sourceTree = SOURCE_ROOT; };
 		CA6976881898A400008B576C /* M13Checkbox.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = M13Checkbox.m; path = Classes/M13Checkbox.m; sourceTree = SOURCE_ROOT; };
 		CAFF1375169139E8005B0C2B /* M13Checkbox.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = M13Checkbox.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -103,6 +107,8 @@
 		CAFF1380169139E8005B0C2B /* Supporting Files */ = {
 			isa = PBXGroup;
 			children = (
+				7E9A409818A19DD00016DA98 /* readme.md */,
+				7E9A409618A19DC40016DA98 /* M13Checkbox.podspec */,
 				CAFF1381169139E8005B0C2B /* M13Checkbox-Info.plist */,
 				CAFF1382169139E8005B0C2B /* InfoPlist.strings */,
 				CAFF1385169139E8005B0C2B /* main.m */,
@@ -178,8 +184,10 @@
 				CAFF1384169139E8005B0C2B /* InfoPlist.strings in Resources */,
 				CAFF138C169139E8005B0C2B /* Default.png in Resources */,
 				CAFF138E169139E8005B0C2B /* Default@2x.png in Resources */,
+				7E9A409718A19DC40016DA98 /* M13Checkbox.podspec in Resources */,
 				CAFF1390169139E8005B0C2B /* Default-568h@2x.png in Resources */,
 				CAFF1396169139E8005B0C2B /* ViewController_iPhone.xib in Resources */,
+				7E9A409918A19DD00016DA98 /* readme.md in Resources */,
 				CAFF1399169139E8005B0C2B /* ViewController_iPad.xib in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
