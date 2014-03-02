@@ -2,12 +2,10 @@ Pod::Spec.new do |s|
   s.name         = "M13Checkbox"
   s.version      = "1.0.0"
   s.summary      = "A customizable checkbox for iOS that mimics the checkbox found on OS X, and Safari."
-
   s.description  = <<-DESC
                    A customizable checkbox for iOS that mimics the checkbox found on OS X, and Safari.
                    DESC
-
-  s.homepage     = "https://github.com/Marxon13/M13Checkbox"
+  s.homepage     = "https://github.com/cabbiepete/M13Checkbox"
   s.license      = {:type => 'MIT',
                     :text => <<-LICENSE
  Copyright (c) 2013 Brandon McQuilkin
@@ -22,17 +20,11 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
     LICENSE
  }
-
-
   s.author             = { "Brandon McQuilkin" => "marxon13@yahoo.com" }
-
+  s.author             = { "Peter Simmons" => "cabbiepete@gmail.com" }
   s.platform     = :ios, '6.0'
-
-  s.source = { :git => "https://github.com/Marxon13/M13Checkbox.git", :tag => "1.0.0"}
-
+  s.source = { :git => "https://github.com/cabbiepete/M13Checkbox.git", :tag => "#{s.version}"}
   s.source_files  = 'Classes/*'
-
   s.frameworks = 'Foundation', 'UIKit', 'CoreGraphics'
-
   s.requires_arc = true
 end
