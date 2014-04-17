@@ -13,6 +13,12 @@
 
 #import "M13Checkbox.h"
 
+#define SYSTEM_VERSION_EQUAL_TO(v)                  ([[[UIDevice currentDevice] systemVersion] compare:v options:NSNumericSearch] == NSOrderedSame)
+#define SYSTEM_VERSION_GREATER_THAN(v)              ([[[UIDevice currentDevice] systemVersion] compare:v options:NSNumericSearch] == NSOrderedDescending)
+#define SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(v)  ([[[UIDevice currentDevice] systemVersion] compare:v options:NSNumericSearch] != NSOrderedAscending)
+#define SYSTEM_VERSION_LESS_THAN(v)                 ([[[UIDevice currentDevice] systemVersion] compare:v options:NSNumericSearch] == NSOrderedAscending)
+#define SYSTEM_VERSION_LESS_THAN_OR_EQUAL_TO(v)     ([[[UIDevice currentDevice] systemVersion] compare:v options:NSNumericSearch] != NSOrderedDescending)
+
 #define kBoxSize .875
 #define kCheckHorizontalExtention .125
 #define kCheckVerticalExtension .125
@@ -182,7 +188,13 @@
 {
     self = [self initWithFrame:CGRectMake(0, 0, 100.0, M13CheckboxDefaultHeight) title:title checkHeight:M13CheckboxDefaultHeight];
     if (self) {
-        CGSize labelSize = [title sizeWithAttributes:@{ NSFontAttributeName: _titleLabel.font }];
+		CGSize labelSize;
+		if (SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"7.0")) {
+			labelSize = [title sizeWithAttributes:@{ NSFontAttributeName: _titleLabel.font }];
+		}
+		else {
+			labelSize = [title sizeWithFont: _titleLabel.font];
+		}
         self.frame = CGRectMake(
                                 self.frame.origin.x,
                                 self.frame.origin.y,
@@ -304,7 +316,13 @@
         fontSize -= 1;
         UIFont *font = [UIFont fontWithName:_titleLabel.font.fontName size:fontSize];
         //Get size
-        CGSize labelSize = [@"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz" sizeWithAttributes:@{ NSFontAttributeName: font }];
+        CGSize labelSize;
+		if (SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"7.0")) {
+			labelSize = [@"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz" sizeWithAttributes:@{ NSFontAttributeName: font }];
+		}
+		else {
+			labelSize = [@"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz" sizeWithFont:font];
+		}
         tempHeight = labelSize.height;
     } while (tempHeight >= height);
     
@@ -313,7 +331,13 @@
 
 - (void)autoFitWidthToText
 {
-    CGSize labelSize = [_titleLabel.text sizeWithAttributes:@{ NSFontAttributeName: _titleLabel.font }];
+    CGSize labelSize;
+	if (SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"7.0")) {
+		labelSize = [_titleLabel.text sizeWithAttributes:@{ NSFontAttributeName: _titleLabel.font }];
+	}
+	else {
+		labelSize = [_titleLabel.text sizeWithFont:_titleLabel.font];
+	}
     self.frame = CGRectMake(
                             self.frame.origin.x,
                             self.frame.origin.y,
