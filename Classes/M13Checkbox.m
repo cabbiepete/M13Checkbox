@@ -2,7 +2,7 @@
 //  M13Checkbox.m
 //  M13Checkbox-UIRadioGroup
 //
-/*Copyright (c) 2012 Brandon McQuilkin
+/*Copyright (c) 2014 Brandon McQuilkin
  
  Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
  
@@ -12,6 +12,12 @@
  */
 
 #import "M13Checkbox.h"
+
+#define SYSTEM_VERSION_EQUAL_TO(v)                  ([[[UIDevice currentDevice] systemVersion] compare:v options:NSNumericSearch] == NSOrderedSame)
+#define SYSTEM_VERSION_GREATER_THAN(v)              ([[[UIDevice currentDevice] systemVersion] compare:v options:NSNumericSearch] == NSOrderedDescending)
+#define SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(v)  ([[[UIDevice currentDevice] systemVersion] compare:v options:NSNumericSearch] != NSOrderedAscending)
+#define SYSTEM_VERSION_LESS_THAN(v)                 ([[[UIDevice currentDevice] systemVersion] compare:v options:NSNumericSearch] == NSOrderedAscending)
+#define SYSTEM_VERSION_LESS_THAN_OR_EQUAL_TO(v)     ([[[UIDevice currentDevice] systemVersion] compare:v options:NSNumericSearch] != NSOrderedDescending)
 
 #define kBoxSize .875
 #define kCheckHorizontalExtention .125
@@ -25,7 +31,7 @@
 //Custom Checkbox View
 @interface CheckView : UIView
 
-@property (nonatomic, retain) M13Checkbox *checkbox;
+@property (nonatomic, weak) M13Checkbox *checkbox;
 @property (nonatomic, assign) BOOL selected;
 
 @end
@@ -160,34 +166,10 @@
 {
     self = [super initWithFrame:frame];
     if (self) {
-        // Initialization code
-        _flat = YES;
-        _strokeColor = [UIColor colorWithRed:0.02 green:0.47 blue:1 alpha:1];
-        _strokeWidth = kBoxStrokeWidth * self.frame.size.height;
-        _checkColor = [UIColor colorWithRed:0.02 green:0.47 blue:1 alpha:1];
-        _tintColor = [UIColor colorWithRed:1.0 green:1.0 blue:1.0 alpha:1.0];
-        _uncheckedColor = [UIColor colorWithRed:0.0 green:0.0 blue:0.0 alpha:0.0];
-        _radius = kBoxRadius * self.frame.size.height;
-        _checkAlignment = M13CheckboxAlignmentRight;
-        _checkState = M13CheckboxStateUnchecked;
-        _enabled = YES;
-        checkView = [[CheckView alloc] initWithFrame:CGRectMake(self.frame.size.width - ((kBoxSize + kCheckHorizontalExtention) * self.frame.size.height), 0, ((kBoxSize + kCheckHorizontalExtention) * self.frame.size.height), self.frame.size.height)];
-        checkView.checkbox = self;
-        checkView.selected = NO;
-        checkView.backgroundColor = [UIColor clearColor];
-        checkView.clipsToBounds = NO;
-        checkView.userInteractionEnabled = NO;
-        _titleLabel = [[UILabel alloc] initWithFrame:CGRectMake(0, self.frame.size.height * kCheckVerticalExtension, self.frame.size.width - checkView.frame.size.width - (self.frame.size.height * kCheckBoxSpacing), self.frame.size.height * kBoxSize)];
-        _titleLabel.textColor = [UIColor colorWithRed:0.0 green:0.0 blue:0.0 alpha:1.0];
-        _titleLabel.font = [UIFont boldSystemFontOfSize:16];
-        _titleLabel.lineBreakMode = NSLineBreakByTruncatingTail;
-        _titleLabel.backgroundColor = [UIColor clearColor];
-        _titleLabel.userInteractionEnabled = NO;
-        [self autoFitFontToHeight];
-        [self addSubview:checkView];
-        [self addSubview:_titleLabel];
-        self.clipsToBounds = NO;
-        self.backgroundColor = [UIColor clearColor];
+        if (_checkHeight == 0) {
+            _checkHeight = self.frame.size.height;
+        }
+        [self setup];
     }
     return self;
 }
@@ -196,62 +178,107 @@
 {
     self = [super initWithCoder:aDecoder];
     if (self) {
-        // Initialization code
-        _flat = YES;
-        _strokeColor = [UIColor colorWithRed:0.02 green:0.47 blue:1 alpha:1];
-        _strokeWidth = kBoxStrokeWidth * self.frame.size.height;
-        _checkColor = [UIColor colorWithRed:0.02 green:0.47 blue:1 alpha:1];
-        _tintColor = [UIColor colorWithRed:1.0 green:1.0 blue:1.0 alpha:1.0];
-        _uncheckedColor = [UIColor colorWithRed:0.0 green:0.0 blue:0.0 alpha:0.0];
-        _radius = kBoxRadius * self.frame.size.height;
-        _checkAlignment = M13CheckboxAlignmentRight;
-        _checkState = M13CheckboxStateUnchecked;
-        _enabled = YES;
-        checkView = [[CheckView alloc] initWithFrame:CGRectMake(self.frame.size.width - ((kBoxSize + kCheckHorizontalExtention) * self.frame.size.height), 0, ((kBoxSize + kCheckHorizontalExtention) * self.frame.size.height), self.frame.size.height)];
-        checkView.checkbox = self;
-        checkView.selected = NO;
-        checkView.backgroundColor = [UIColor clearColor];
-        checkView.clipsToBounds = NO;
-        checkView.userInteractionEnabled = NO;
-        _titleLabel = [[UILabel alloc] initWithFrame:CGRectMake(0, self.frame.size.height * kCheckVerticalExtension, self.frame.size.width - checkView.frame.size.width - (self.frame.size.height * kCheckBoxSpacing), self.frame.size.height * kBoxSize)];
-        _titleLabel.textColor = [UIColor colorWithRed:0.0 green:0.0 blue:0.0 alpha:1.0];
-        _titleLabel.font = [UIFont boldSystemFontOfSize:16];
-        _titleLabel.lineBreakMode = NSLineBreakByTruncatingTail;
-        _titleLabel.backgroundColor = [UIColor clearColor];
-        _titleLabel.userInteractionEnabled = NO;
-        [self autoFitFontToHeight];
-        [self addSubview:checkView];
-        [self addSubview:_titleLabel];
-        self.clipsToBounds = NO;
-        self.backgroundColor = [UIColor clearColor];
+        _checkHeight = M13CheckboxDefaultHeight;
+        [self setup];
     }
     return self;
 }
 
 - (id)initWithTitle:(NSString *)title
 {
-    self = [self initWithFrame:CGRectMake(0, 0, 100.0, M13CheckboxDefaultHeight)];
+    self = [self initWithFrame:CGRectMake(0, 0, 100.0, M13CheckboxDefaultHeight) title:title checkHeight:M13CheckboxDefaultHeight];
     if (self) {
+		CGSize labelSize;
+		if (SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"7.0")) {
+			labelSize = [title sizeWithAttributes:@{ NSFontAttributeName: _titleLabel.font }];
+		}
+		else {
+			labelSize = [title sizeWithFont: _titleLabel.font];
+		}
+        self.frame = CGRectMake(
+                                self.frame.origin.x,
+                                self.frame.origin.y,
+                                labelSize.width + ([self heightForCheckbox] * kCheckBoxSpacing) + ((kBoxSize + kCheckHorizontalExtention) * [self heightForCheckbox]),
+                                self.frame.size.height);
+    }
+    return self;
+}
+
+- (id)initWithFrame:(CGRect)frame title:(NSString *)title
+{
+    self = [self initWithFrame:frame title:title checkHeight:M13CheckboxDefaultHeight];
+    if (self) {
+        
+    }
+    return self;
+}
+
+- (id)initWithFrame:(CGRect)frame title:(NSString *)title checkHeight:(CGFloat)checkHeight
+{
+    self = [super initWithFrame:frame];
+    if (self) {
+        //Set the title label text
+        _checkHeight = checkHeight;
+        [self setup];
         _titleLabel.text = title;
-        [self autoFitFontToHeight];
-        CGSize labelSize = [title sizeWithFont:_titleLabel.font];
-        self.frame = CGRectMake(self.frame.origin.x, self.frame.origin.y, labelSize.width + (self.frame.size.height * kCheckBoxSpacing) + ((kBoxSize + kCheckHorizontalExtention) * self.frame.size.height), self.frame.size.height);
         [self layoutSubviews];
     }
     return self;
 }
 
-- (id)initWithTitle:(NSString *)title andHeight:(CGFloat)height
+- (void)setup
 {
-    self = [self initWithFrame:CGRectMake(0, 0, 100.0, height)];
-    if (self) {
-        _titleLabel.text = title;
-        [self autoFitFontToHeight];
-        CGSize labelSize = [title sizeWithFont:_titleLabel.font];
-        self.frame = CGRectMake(self.frame.origin.x, self.frame.origin.y, labelSize.width + (self.frame.size.height * kCheckBoxSpacing) + ((kBoxSize + kCheckHorizontalExtention) * self.frame.size.height), self.frame.size.height);
-        [self layoutSubviews];
-    }
-    return self;
+    //Set the basic properties
+    CGFloat heightForCheckbox = [self heightForCheckbox];
+    _flat = YES;
+    _strokeColor = [UIColor colorWithRed:0.02 green:0.47 blue:1 alpha:1];
+    _strokeWidth = kBoxStrokeWidth * heightForCheckbox;
+    _checkColor = [UIColor colorWithRed:0.02 green:0.47 blue:1 alpha:1];
+    _tintColor = [UIColor colorWithRed:1.0 green:1.0 blue:1.0 alpha:1.0];
+    _uncheckedColor = [UIColor colorWithRed:0.0 green:0.0 blue:0.0 alpha:0.0];
+    self.clipsToBounds = NO;
+    self.backgroundColor = [UIColor clearColor];
+    _radius = kBoxRadius * heightForCheckbox;
+    _checkAlignment = M13CheckboxAlignmentRight;
+    _checkState = M13CheckboxStateUnchecked;
+    _enabled = YES;
+    //Create the check view
+    CGRect checkViewFrame = CGRectIntegral(CGRectMake(
+                                                      self.frame.size.width - ((kBoxSize + kCheckHorizontalExtention) * heightForCheckbox),
+                                                      (self.frame.size.height - ((kBoxSize + kCheckHorizontalExtention) * heightForCheckbox)) / 2.0,
+                                                      ((kBoxSize + kCheckHorizontalExtention) * heightForCheckbox),
+                                                      heightForCheckbox));
+    checkView = [[CheckView alloc] initWithFrame:checkViewFrame];
+    checkView.checkbox = self;
+    checkView.selected = NO;
+    checkView.backgroundColor = [UIColor clearColor];
+    checkView.clipsToBounds = NO;
+    checkView.userInteractionEnabled = NO;
+    
+    //Create the title label
+    CGRect labelFrame = CGRectIntegral(CGRectMake(
+                                                  0,
+                                                  0,
+                                                  self.frame.size.width - checkView.frame.size.width - ([self heightForCheckbox] * kCheckBoxSpacing),
+                                                  self.frame.size.height));
+    _titleLabel = [[UILabel alloc] initWithFrame:labelFrame];
+    _titleLabel.textColor = [UIColor colorWithRed:0.0 green:0.0 blue:0.0 alpha:1.0];
+    _titleLabel.font = [UIFont boldSystemFontOfSize:16];
+    _titleLabel.lineBreakMode = NSLineBreakByTruncatingTail;
+    _titleLabel.backgroundColor = [UIColor clearColor];
+    _titleLabel.userInteractionEnabled = NO;
+    //Set font size
+    [self autoFitFontToHeight];
+    //Add the subviews
+    [self addSubview:checkView];
+    [self addSubview:_titleLabel];
+    
+}
+
+- (CGFloat)heightForCheckbox
+{
+    //See if the checkbox's height is automatic, and return the proper size
+    return _checkHeight == M13CheckboxHeightAutomatic ? self.frame.size.height : _checkHeight;
 }
 
 /*
@@ -260,18 +287,19 @@
 
 - (UIBezierPath *)getDefaultShape
 {
+    CGFloat height = [self heightForCheckbox];
     UIBezierPath* bezierPath = [UIBezierPath bezierPath];
-    [bezierPath moveToPoint: CGPointMake((0.17625 * self.frame.size.height), (0.368125 * self.frame.size.height))];
-    [bezierPath addCurveToPoint: CGPointMake((0.17625 * self.frame.size.height), (0.46375 * self.frame.size.height)) controlPoint1: CGPointMake((0.13125 * self.frame.size.height), (0.418125 * self.frame.size.height)) controlPoint2: CGPointMake((0.17625 * self.frame.size.height), (0.46375 * self.frame.size.height))];
-    [bezierPath addLineToPoint: CGPointMake((0.4 * self.frame.size.height), (0.719375 * self.frame.size.height))];
-    [bezierPath addCurveToPoint: CGPointMake((0.45375* self.frame.size.height), (0.756875 * self.frame.size.height)) controlPoint1: CGPointMake((0.4 * self.frame.size.height), (0.719375 * self.frame.size.height)) controlPoint2: CGPointMake((0.4275 * self.frame.size.height), (0.756875 * self.frame.size.height))];
-    [bezierPath addCurveToPoint: CGPointMake((0.505625 * self.frame.size.height), (0.719375 * self.frame.size.height)) controlPoint1: CGPointMake((0.480625 * self.frame.size.height), (0.75625 * self.frame.size.height)) controlPoint2: CGPointMake((0.505625 * self.frame.size.height), (0.719375 * self.frame.size.height))];
-    [bezierPath addLineToPoint: CGPointMake((0.978125* self.frame.size.height), (0.145625* self.frame.size.height))];
-    [bezierPath addCurveToPoint: CGPointMake((0.978125* self.frame.size.height), (0.050625* self.frame.size.height)) controlPoint1: CGPointMake((0.978125* self.frame.size.height), (0.145625* self.frame.size.height)) controlPoint2: CGPointMake((1.026875* self.frame.size.height), (0.09375* self.frame.size.height))];
-    [bezierPath addCurveToPoint: CGPointMake((0.885625* self.frame.size.height), (0.050625* self.frame.size.height)) controlPoint1: CGPointMake((0.929375* self.frame.size.height), (0.006875* self.frame.size.height)) controlPoint2: CGPointMake((0.885625* self.frame.size.height), (0.050625* self.frame.size.height))];
-    [bezierPath addLineToPoint: CGPointMake((0.45375* self.frame.size.height), (0.590625* self.frame.size.height))];
-    [bezierPath addLineToPoint: CGPointMake((0.26875* self.frame.size.height), (0.368125 * self.frame.size.height))];
-    [bezierPath addCurveToPoint: CGPointMake((0.17625 * self.frame.size.height), (0.368125 * self.frame.size.height)) controlPoint1: CGPointMake((0.26875* self.frame.size.height), (0.368125 * self.frame.size.height)) controlPoint2: CGPointMake((0.221875* self.frame.size.height), (0.318125* self.frame.size.height))];
+    [bezierPath moveToPoint: CGPointMake((0.17625 * height), (0.368125 * height))];
+    [bezierPath addCurveToPoint: CGPointMake((0.17625 * height), (0.46375 * height)) controlPoint1: CGPointMake((0.13125 * height), (0.418125 * height)) controlPoint2: CGPointMake((0.17625 * height), (0.46375 * height))];
+    [bezierPath addLineToPoint: CGPointMake((0.4 * height), (0.719375 * height))];
+    [bezierPath addCurveToPoint: CGPointMake((0.45375* height), (0.756875 * height)) controlPoint1: CGPointMake((0.4 * height), (0.719375 * height)) controlPoint2: CGPointMake((0.4275 * height), (0.756875 * height))];
+    [bezierPath addCurveToPoint: CGPointMake((0.505625 * height), (0.719375 * height)) controlPoint1: CGPointMake((0.480625 * height), (0.75625 * height)) controlPoint2: CGPointMake((0.505625 * height), (0.719375 * height))];
+    [bezierPath addLineToPoint: CGPointMake((0.978125* height), (0.145625* height))];
+    [bezierPath addCurveToPoint: CGPointMake((0.978125* height), (0.050625* height)) controlPoint1: CGPointMake((0.978125* height), (0.145625* height)) controlPoint2: CGPointMake((1.026875* height), (0.09375* height))];
+    [bezierPath addCurveToPoint: CGPointMake((0.885625* height), (0.050625* height)) controlPoint1: CGPointMake((0.929375* height), (0.006875* height)) controlPoint2: CGPointMake((0.885625* height), (0.050625* height))];
+    [bezierPath addLineToPoint: CGPointMake((0.45375* height), (0.590625* height))];
+    [bezierPath addLineToPoint: CGPointMake((0.26875* height), (0.368125 * height))];
+    [bezierPath addCurveToPoint: CGPointMake((0.17625 * height), (0.368125 * height)) controlPoint1: CGPointMake((0.26875* height), (0.368125 * height)) controlPoint2: CGPointMake((0.221875* height), (0.318125* height))];
     [bezierPath closePath];
     bezierPath.miterLimit = 0;
     return bezierPath;
@@ -279,7 +307,7 @@
 
 - (void)autoFitFontToHeight
 {
-    CGFloat height = self.frame.size.height * kBoxSize;
+    CGFloat height = [self heightForCheckbox] * kBoxSize;
     CGFloat fontSize = kM13CheckboxMaxFontSize;
     CGFloat tempHeight = MAXFLOAT;
     
@@ -288,7 +316,13 @@
         fontSize -= 1;
         UIFont *font = [UIFont fontWithName:_titleLabel.font.fontName size:fontSize];
         //Get size
-        CGSize labelSize = [@"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz" sizeWithFont:font];
+        CGSize labelSize;
+		if (SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"7.0")) {
+			labelSize = [@"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz" sizeWithAttributes:@{ NSFontAttributeName: font }];
+		}
+		else {
+			labelSize = [@"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz" sizeWithFont:font];
+		}
         tempHeight = labelSize.height;
     } while (tempHeight >= height);
     
@@ -297,25 +331,47 @@
 
 - (void)autoFitWidthToText
 {
-    CGSize labelSize = [_titleLabel.text sizeWithFont:_titleLabel.font];
-    self.frame = CGRectMake(self.frame.origin.x, self.frame.origin.y, labelSize.width + (self.frame.size.height * kCheckBoxSpacing) + ((kBoxSize + kCheckHorizontalExtention) * self.frame.size.height), self.frame.size.height);
+    CGSize labelSize;
+	if (SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"7.0")) {
+		labelSize = [_titleLabel.text sizeWithAttributes:@{ NSFontAttributeName: _titleLabel.font }];
+	}
+	else {
+		labelSize = [_titleLabel.text sizeWithFont:_titleLabel.font];
+	}
+    self.frame = CGRectMake(
+                            self.frame.origin.x,
+                            self.frame.origin.y,
+                            labelSize.width + ([self heightForCheckbox] * kCheckBoxSpacing) + ((kBoxSize + kCheckHorizontalExtention) * [self heightForCheckbox]),
+                            self.frame.size.height);
     [self layoutSubviews];
 }
 
 - (void)layoutSubviews
 {
+    [super layoutSubviews];
     if (_checkAlignment == M13CheckboxAlignmentRight) {
-        checkView.frame = CGRectMake(self.frame.size.width - ((kBoxSize + kCheckHorizontalExtention) * self.frame.size.height), 0, ((kBoxSize + kCheckHorizontalExtention) * self.frame.size.height), self.frame.size.height);
-        _titleLabel.frame = CGRectMake(0, self.frame.size.height * kCheckVerticalExtension, self.frame.size.width - checkView.frame.size.width - (self.frame.size.height * kCheckBoxSpacing), self.frame.size.height * kBoxSize);
+        checkView.frame = CGRectIntegral(CGRectMake(
+                                                    (_titleLabel.text.length == 0 ? 0 : self.frame.size.width - ((kBoxSize + kCheckHorizontalExtention) * [self heightForCheckbox])),
+                                     (self.frame.size.height - ((kBoxSize + kCheckHorizontalExtention) * [self heightForCheckbox])) / 2.0,
+                                     ((kBoxSize + kCheckHorizontalExtention) * [self heightForCheckbox]),
+                                     [self heightForCheckbox]));
+        _titleLabel.frame = CGRectIntegral(CGRectMake(
+                                                      0,
+                                                      0,
+                                                      self.frame.size.width - ([self heightForCheckbox] * (kBoxSize + kCheckHorizontalExtention + kCheckBoxSpacing)),
+                                                      self.frame.size.height));
     } else {
-        checkView.frame = CGRectMake(0, 0, ((kBoxSize + kCheckHorizontalExtention) * self.frame.size.height), self.frame.size.height);
-        _titleLabel.frame = CGRectMake(checkView.frame.size.width + (self.frame.size.height * kCheckBoxSpacing), self.frame.size.height * kCheckVerticalExtension, self.frame.size.width - (self.frame.size.height * (kBoxSize + kCheckHorizontalExtention + kCheckBoxSpacing)), self.frame.size.height * kBoxSize);
+        checkView.frame = CGRectIntegral(CGRectMake(
+                                     0,
+                                     (self.frame.size.height - ((kBoxSize + kCheckHorizontalExtention) * [self heightForCheckbox])) / 2.0,
+                                     ((kBoxSize + kCheckHorizontalExtention) * [self heightForCheckbox]),
+                                     [self heightForCheckbox]));
+        _titleLabel.frame = CGRectIntegral(CGRectMake(
+                                                      checkView.frame.size.width + ([self heightForCheckbox] * kCheckBoxSpacing),
+                                                      0,
+                                                      self.frame.size.width - ([self heightForCheckbox] * (kBoxSize + kCheckHorizontalExtention + kCheckBoxSpacing)),
+                                                      self.frame.size.height));
     }
-}
-
-- (void)setState:(M13CheckboxState)state __attribute((deprecated("use setCheckState method")))
-{
-    [self setCheckState:state];
 }
 
 - (void)setCheckState:(M13CheckboxState)checkState{
@@ -325,7 +381,6 @@
 
 - (void)toggleCheckState
 {
-
     self.checkState = !self.checkState;
 }
 
@@ -335,7 +390,7 @@
         _titleLabel.textColor = labelColor;
     } else {
         labelColor = _titleLabel.textColor;
-        float r, g, b, a;
+        CGFloat r, g, b, a;
         [labelColor getRed:&r green:&g blue:&b alpha:&a];
         r = floorf(r * 100.0 + 0.5) / 100.0;
         g = floorf(g * 100.0 + 0.5) / 100.0;
@@ -352,15 +407,6 @@
     [self layoutSubviews];
 }
 
-- (void)setTitle:(NSString *)title
-{
-    _titleLabel.text = title;
-    [self autoFitFontToHeight];
-    CGSize labelSize = [title sizeWithFont:_titleLabel.font];
-    self.frame = CGRectMake(self.frame.origin.x, self.frame.origin.y, labelSize.width + (self.frame.size.height * kCheckBoxSpacing) + ((kBoxSize + kCheckHorizontalExtention) * self.frame.size.height), self.frame.size.height);
-    [self layoutSubviews];
-}
-
 - (id)value
 {
     if (self.checkState == M13CheckboxStateUnchecked) {
@@ -370,6 +416,17 @@
     } else {
         return mixedValue;
     }
+}
+
+- (void)setCheckHeight:(CGFloat)checkHeight
+{
+    _checkHeight = checkHeight;
+    [self layoutSubviews];
+}
+
+- (CGRect)checkboxFrame
+{
+    return checkView.frame;
 }
 
 #pragma mark - UIControl overrides
